@@ -3,7 +3,11 @@ from transactions import views
 
 urlpatterns = [
     path(
-        "upload/",
+        "data/",
         views.UploadCNABView.as_view(),
-    )
+    ),
+    path(
+        "upload/",
+        views.upload
+    ),
 ]

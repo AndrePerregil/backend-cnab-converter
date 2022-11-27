@@ -1,5 +1,10 @@
+import ipdb
+
 def decode_data(str):
     type_encoded = str[0:1]
+    if not type_encoded.isnumeric():
+        return "not CNAB"
+    
     types=[
         ["debit", "income"],
         ["ticket", "expense"],
@@ -12,7 +17,7 @@ def decode_data(str):
         ["rent", "expense"],
     ]
     
-    type_decoded = types[int(type_encoded)-1]
+    type_decoded = types[int(type_encoded)-1]  
     date_decoded = f'{str[1:5]}-{str[5:7]}-{str[7:9]}'
     value_decoded = int(str[10:19])/100
     cpf_decoded = str[19:30]
