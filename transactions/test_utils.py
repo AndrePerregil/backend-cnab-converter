@@ -5,11 +5,23 @@ class test_file_reading(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.valid_data = "3201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO       "
+        
+        """82 max length"""
         cls.invalid_length = "3201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO       123123"
+        
+        """first character can only be 1-9 range"""
         cls.invalid_type = "0201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO       "
+        
+        """date must be the correct format"""
         cls.invalid_date = "3testtest0000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO       "
+        
+        """value must be an integer"""
         cls.invalid_value = "32019030100000not00096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO       "
+        
+        """CPF must be a string of integers"""
         cls.invalid_cpf = "32019030100000142000962067test4753****3153153453JOÃO MACEDO   BAR DO JOÃO       "
+        
+        """time must be a string of integers"""
         cls.invalid_time = "3201903010000014200096206760174753****3153notnotJOÃO MACEDO   BAR DO JOÃO       "
 
         cls.expected_keys = {

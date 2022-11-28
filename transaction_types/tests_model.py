@@ -8,6 +8,8 @@ class TransactionTypesModelTest(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.trans_type_valid_data = {"type":"debit", "nature":"income"}
+        
+        """the following are invalid values for their intended fields"""
         cls.trans_type_wrong_data = {"type":"inheritance", "nature": "god_bless"}
 
         cls.expected_keys = {
