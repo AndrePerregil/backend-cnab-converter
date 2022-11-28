@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "transactions",
     "transaction_types",
     "businesses",
-    "owners"
+    "owners",
 ]
 
 MIDDLEWARE = [
