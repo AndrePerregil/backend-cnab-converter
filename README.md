@@ -15,6 +15,7 @@ After cloning the Repo:</br>
 Set up your virtual enviroment with 'python -m venv venv',</br>
 Activate it with 'source venv/bin/activate',</br>
 Install dependencies with 'pip install -r requirements.txt',</br>
+Run migrations (instancing DB) with 'python manage.py migrate', </br>
 Run locally with 'python manage.py runserver', </br>
 </br>
 To run tests use 'python manage.py test', </br>
