@@ -13,5 +13,7 @@ In this very repo you can find a CNAB file (CNAB.example.txt) select that as you
 After you submission, all the data in the file is decoded and presented back to you, alongside a balance summary at the end for both users and their individual businesses.</br>
 </br>
 I also took the liberty of doing a single view that does the same, but works more as a standard API. Feel free to check it out on a tool like insomnia. You'll find it at 'http://127.0.0.1:8000/tech_interview/data/'</br>
+Just send a 'POST' request with a body of a multipartForm with a filed named file (and the CNAB.example.txt file, of course).</br>
+it's logic is identical to the page above, it just doesn't have the rendering to a webpage with the data.
 
 ## How to run the project
