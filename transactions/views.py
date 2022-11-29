@@ -1,98 +1,37 @@
-from owners.models import User
-from businesses.models import Business
-from transactions.models import Transaction
-from transaction_types.models import Transaction_type
+from forms import UploadForm
+from utils.handlers import CNAB_handler, summary_generator
+from utils.db_data_parser import db_parser
 
-from owners.serializers import UserSerializer
-from businesses.serializers import BusinessSerializer
-from transactions.serializers import TransactionSerializer
-from transaction_types.serializers import TransactionTypeSerializer
+from django.shortcuts import render  
+from django.http import HttpResponse
+from rest_framework.views import APIView, Request, Response
 
-from utils.forms import UploadFileForm
-from utils.decoders import decode_data
+from forms import UploadForm
 
-import ipdb
-
-from rest_framework.views import APIView, Request, Response, status
-
-class UploadCNABView(APIView): 
-    def post(self, request:Request) -> Response:
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            content = []
-            transactions = []
-            data = request.data["file"]
+def upload(request):
+    if request.method == "POST":
+        upload = UploadForm(request.POST, request.FILES)
+        if upload.is_valid():
+            data = upload.cleaned_data.get("file")
             
-            for line in data:
-                content.append(decode_data(line.decode("utf-8")))
+            file_data = CNAB_handler(data)
+            
+            summary = summary_generator()
+            data = db_parser(file_data)
+            
+            return HttpResponse(data)
+    else:
+        upload_form = UploadForm()
+        return render(request, "transactions/form.html", {"form":upload_form})
 
-            for entry in content:
-                transaction_types_data = {"type":entry["type"], "nature":entry["nature"]}
-                serializer = TransactionTypeSerializer(transaction_types_data)                
-                transaction_type, t_created = Transaction_type.objects.get_or_create(**serializer.data)
-                if t_created:
-                    transaction_type.save()
+class UploadCNABView(APIView):
+    def post(self, request:Request) -> Response:
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            data = request.data["file"]
 
-                owner_data = {"username" : entry["owner"]}
-                serializer = UserSerializer(owner_data)
-                owner, o_created = User.objects.get_or_create(**serializer.data)
-                if o_created:
-                    owner.save()
+            handle_file = CNAB_handler(data)
+            summary = summary_generator()
 
-                business_data = {"name":entry["business"], "owner" : owner}
-                serializer = BusinessSerializer(business_data)
-                business, b_created = Business.objects.get_or_create(**serializer.data, owner=owner)
-                if b_created:
-                    business.save()
-
-                transaction_data = {
-                    "date" : entry["date"], 
-                    "value" : entry["value"],
-                    "cpf" : entry["cpf"],
-                    "card_details" : entry["card"],
-                    "time" : entry["time"],
-                }
-                serializer = TransactionSerializer(transaction_data)
-                transaction = Transaction(**serializer.data, transaction_type = transaction_type, business = business)
-                transactions.append(transaction)
-
-            Transaction.objects.bulk_create(transactions)
-
-            all_users = User.objects.all()
-            summary = []
-
-            for user in all_users:
-                user_businesses = Business.objects.filter(owner=user)
-                user_businesses_data = []
-                user_account_balance = 0
-                
-                for business in user_businesses:    
-                    income_business_transactions = Transaction.objects.filter(business=business).filter(transaction_type__nature = "income")
-                    expense_bussiness_transactions = Transaction.objects.filter(business=business).filter(transaction_type__nature = "expense")
-                    business_account_balance = 0
-
-                    for transaction in income_business_transactions:
-                        business_account_balance += transaction.value
-                        user_account_balance += transaction.value
-
-                    for transaction in expense_bussiness_transactions:
-                        business_account_balance -= transaction.value
-                        user_account_balance -= transaction.value                   
-                    
-                    user_businesses_data.append({
-                        "business_id":business.id,
-                        "business_name": business.name,
-                        "business_balance": business_account_balance   
-                    })
-
-                user_data = {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "total_balance": user_account_balance,
-                    "businesses": user_businesses_data
-                }
-
-                summary.append(user_data)
-
-            return Response({"decoded_file_data":content, "accounts_summary":summary})
+            return Response({"decoded_file_data":handle_file, "accounts_summary":summary})
         return Response("no file recieved", status=400)
